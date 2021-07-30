@@ -13,7 +13,7 @@ trigger addRecord on Territory__c (before insert, before update) {
             }
             if(trrts.size()>0 || trrts !=null){
                 if (territoryController.verifyMaxSalesRepForZipCode(trrts)==false){
-                    trrts[0].addError('This ZipCode already has 3 salesRep');
+                    trrts[0].name.addError('Can not add this territory, check conditions or contact the administrator');
                 }
             }
             
@@ -23,7 +23,7 @@ trigger addRecord on Territory__c (before insert, before update) {
             trrts = trigger.new;
             system.debug('trrts: ' + trrts);
             if (territoryController.verifyMaxSalesRepForZipCode(trrts) == false){
-                trrts[0].addError('This ZipCode already has 3 salesRep');
+                trrts[0].name.addError('Can not add this territory, check conditions or contact the administrator');
             }
             
         }
