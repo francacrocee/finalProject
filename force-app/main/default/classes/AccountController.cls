@@ -1,4 +1,42 @@
 public class AccountController {
+
+    //Method to retrieve all accounts in which its Billing Postal Code has changed - returns new values - 
+    public static List <Account> filterByChangeZipCodeNewValues (List <Account> newAccs, List <Account> oldAccs){
+
+        List<Account> nAccs = new List<Account>();
+        //List<Account> oAccs = new List<Account>();
+    
+        for (Account aNew : newAccs){
+            for(Account aOld : oldAccs){
+                if(aNew.BillingPostalCode != aOld.BillingPostalCode){
+                    nAccs.add(aNew);
+                    //oAccs.add(aOld);
+                }
+            }
+        }
+        return nAccs;
+    } 
+
+    //Method to retrieve all accounts in which its Billing Postal Code has changed - returns OLD values - 
+    public static List <Account> filterByChangeZipCodeOldValues (List <Account> newAccs, List <Account> oldAccs){
+
+        //List<Account> nAccs = new List<Account>();
+        List<Account> oAccs = new List<Account>();
+    
+        for (Account aNew : newAccs){
+            for(Account aOld : oldAccs){
+                if(aNew.BillingPostalCode != aOld.BillingPostalCode){
+                    //nAccs.add(aNew);
+                    oAccs.add(aOld);
+                }
+            }
+        }
+        return oAccs;
+    } 
+        
+    
+    
+    
     
     //Requirement #2a
     /*public static void updateAccountOwner(List<Account> accs){
@@ -29,7 +67,11 @@ public class AccountController {
     }*/
 
  //Requirement #2b
-    public static void updateContactOwner(List<Account> accs){
+    public static void updateContactOwner(List<Account> nAccs, List<Account> oAccs){
+
+        List <Account> accs = filterByChangeZipCodeNewValues(nAccs, oAccs);
+
+
         List<Account> myAccounts = [SELECT Id, Name, OwnerId, BillingPostalCode FROM Account WHERE id = :accs];
         List<Contact> ctcs = [SELECT Id, OwnerId, AccountId FROM Contact];
         List<Contact> ctcToUpdate = new List<Contact>();
@@ -46,7 +88,9 @@ public class AccountController {
     }
 
     //Requirement #2c
-    public static void updateOpenOpportunities(List<Account> accs){
+    public static void updateOpenOpportunities(List<Account> nAccs, List<Account> oAccs){
+
+        List <Account> accs = filterByChangeZipCodeNewValues(nAccs, oAccs);
 
         List<Opportunity> opps = [SELECT accountId, ownerId, stageName from opportunity WHERE stageName != 'Closed Lost' AND stageName != 'Closed Won'];
         List<Account> myAccounts = [SELECT Id, Name, OwnerId, BillingPostalCode FROM Account WHERE id = :accs];
@@ -64,7 +108,9 @@ public class AccountController {
     }
 
     //Requirement #3
-    public static void updateAccountOwner(List<Account> accs){
+    public static void updateAccountOwner(List<Account> nAccs, List<Account> oAccs){
+
+        List <Account> accs = filterByChangeZipCodeNewValues(nAccs, oAccs);
     
         //Get all accounts with information I need
         List<Account> myAccounts = [SELECT Id, Name, OwnerId, BillingPostalCode FROM Account WHERE id = :accs];
@@ -96,95 +142,21 @@ public class AccountController {
     }
 
     //#Requirement 6
-/*    public static void createAssigmentHistoryRecord(List<Account> newAccs){
+    public static void createAssigmentHistoryRecord(List<Account> nAccs, List<Account> oAccs){
 
-        List<Assignment_History__c> assHistoryToInsert = new List<Assignment_History__c>();
+        List <Account> newAccs = filterByChangeZipCodeNewValues(nAccs, oAccs);
+        List <Account> oldAccs = filterByChangeZipCodeOldValues(nAccs, oAccs);
 
-        //Get all territories
-        List<Territory__c> territories =[SELECT Zip_Code__c, Owner__c FROM Territory__C];
-        //List<Territory__c> filteredNewTerritories = new List<Territory__c>();
-        //Iterate over recieved NEW accounts and over territories to obtain the list of territories in my accounts
-        /*for(Account a : newAccs){
-            for(Territory__c t : territories){
-                if(a.BillingPostalCode == t.Zip_Code__c && a.OwnerId == t.owner__c){
-                    system.debug(1);
-                    filteredNewTerritories.add(t);
-                }
-            }
-        }*/
-
-    /*    List<Territory__c> filteredOldTerritories = new List<Territory__c>();
-        for(Account a : newAccs){
-            for(Territory__c t : territories){
-                if(a.BillingPostalCode == t.Zip_Code__c && a.OwnerId == t.owner__c){
-                    system.debug(2);
-                    filteredOldTerritories.add(t);
-                }
-            }
-        }*/
-
-        //Get all territories history for my territories List
-        //List<Territory__History> filteredTh = [SELECT Field,Id,NewValue,OldValue,ParentId FROM Territory__History WHERE ParentId IN :filteredNewTerritories];
-        //Get all accounts history for my accounts List
-        /*List<AccountHistory> filteredAh = [SELECT AccountId,CreatedDate,DataType,Field,Id,NewValue,OldValue FROM AccountHistory WHERE AccountId in :newAccs ORDER BY createdDate desc];
-        List<User> users = [select name, Id from User];
-
-        for(Account a : newAccs){
-            for(AccountHistory ah : filteredAh){
-                if(a.Id == ah.AccountId){
-                    system.debug(3);
-                    Assignment_History__c assHis = new Assignment_History__c();
-                    assHis.Account__c= a.Id;
-                    assHis.Changed_By__c = a.CreatedById;
-
-                    if(ah.Field == 'Owner' && ah.DataType == 'EntityId'){
-                        system.debug(4);
-                        for(User u : users){
-                            if(u.Id == ah.OldValue){
-                                system.debug(5);
-                                assHis.Previous_Owner__c = u.Id;
-                                assHis.New_owner__c = a.OwnerId;
-
-                            }
-                        }                        
-                    }
-                    if(ah.Field == 'BillingPostalCode'){
-                        system.debug(6);
-                        for(Territory__c t : territories){
-                            system.debug('t.zipcode: '+t.Zip_Code__c);
-                            system.debug('ah.OldValue: '+ ah.OldValue);
-                            system.debug('t.Owner__c: '+ t.Owner__c);
-                            
-                            if(t.Zip_Code__c == ah.OldValue && t.Owner__c == assHis.Previous_Owner__c){
-                                system.debug(7);
-                                assHis.Previous_Territory__c = t.Id;
-                            }
-                            if(t.Zip_Code__c == ah.NewValue && t.Owner__c == assHis.New_owner__c){
-                                system.debug(8);
-                                assHis.New_Territory__c = t.Id;
-                            }
-                        }
-                    }
-                    assHistoryToInsert.add(assHis);
-                    system.debug('Nuevo Objeto: ' + assHis);
-                }
-            }
-        }
-
-        system.debug('List to insert: ' + assHistoryToInsert);    
-        insert assHistoryToInsert;
-            
-
-    }*/
-    //#Requirement 6
-    public static void createAssigmentHistoryRecord(List<Account> newAccs, List<Account> oldAccs){
+        
+        List<Account> newAccsFULL = [SELECT Id, CreatedById, OwnerId, BillingPostalCode FROM Account WHERE Id in :newAccs];
 
         List<Assignment_History__c> assHistoryToInsert = new List<Assignment_History__c>();
         List<Territory__c> territories = [SELECT Zip_Code__c, Owner__c FROM Territory__C];
 
-        for(Account aNew : newAccs){
+        for(Account aNew : newAccsFULL){
             for(account aOld : oldAccs){
                 if(aNew.Id == aOld.Id){
+                    system.debug('Nueva account: ' + aNew);
                     Assignment_History__c ah = new Assignment_History__c();
                     ah.Account__c= aNew.Id;
                     ah.Changed_By__c = aNew.CreatedById;
@@ -195,7 +167,7 @@ public class AccountController {
                             ah.Previous_territory__c = t.Id;
                         }
                         if(t.Zip_Code__c == aNew.BillingPostalCode && t.Owner__c == aNew.OwnerId){
-                            ah.Previous_territory__c = t.Id;
+                            ah.New_Territory__c = t.Id;
                         }
                     }
                     assHistoryToInsert.add(ah);
@@ -206,4 +178,28 @@ public class AccountController {
     }
 
 }
- 
+ /*
+ Account:
+ {Id=0015e00000FdmTdAAJ, 
+    IsDeleted=false, 
+    MasterRecordId=null, 
+    Name=sForce, 
+    Type=null, 
+    ParentId=null, 
+    BillingStreet=The Landmark @ One Market, 
+    BillingCity=San Francisco,
+    BillingState=CA, 
+    BillingPostalCode=123, 
+    BillingCountry=US, 
+    BillingLatitude=null, 
+    BillingLongitude=null, 
+    BillingGeocodeAccuracy=null, 
+    ShippingStreet=null, 
+    ShippingCity=null, 
+    ShippingState=null, 
+    ShippingPostalCode=null, 
+    ShippingCountry=null, 
+    ShippingLatitude=null, 
+    ShippingLongitude=null, 
+    ShippingGeocodeAccura
+ */
