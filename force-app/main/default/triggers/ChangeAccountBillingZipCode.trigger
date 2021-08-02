@@ -1,7 +1,4 @@
 trigger ChangeAccountBillingZipCode on Account (after insert, after update) {
-
-    
-
     List<Account> accs = new List<Account>();
     List<Account> oldAccs = new List<Account>();
 
