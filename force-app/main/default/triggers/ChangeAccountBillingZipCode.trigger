@@ -5,19 +5,17 @@ trigger ChangeAccountBillingZipCode on Account (after insert, after update) {
     accs = trigger.New;
     oldAccs = trigger.Old;
 
-    if(trigger.isUpdate){
-        //call methods in salesRepController class
-        AccountController.updateAccountOwner(accs, oldAccs);
-        AccountController.updateContactOwner(accs, oldAccs);
-        AccountController.updateOpenOpportunities(accs, oldAccs);
-        AccountController.createAssigmentHistoryRecord(accs, oldAccs);
-    }
-    if(trigger.isInsert){
-        //call methods in salesRepController class
-        //AccountController.updateAccountOwner(accs);
-        
+    if(trigger.isAfter){
+        system.debug('trigger');
+        if(trigger.isUpdate || trigger.isInsert){
+            //call methods in salesRepController class
+            AccountController.updateAccountOwner(accs, oldAccs);
+            AccountController.updateContactOwner(accs, oldAccs);
+            AccountController.updateOpenOpportunities(accs, oldAccs);
+            AccountController.createAssigmentHistoryRecord(accs, oldAccs);
         }
     }
+}
 
 
 
