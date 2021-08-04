@@ -1,6 +1,5 @@
 public class AccountController {
 
-    
     //Requirement #2a
     /*public static void updateAccountOwner(List<Account> accs){
     system.debug('Lista que recibo en account owner: ' + accs);
@@ -26,16 +25,18 @@ public class AccountController {
 
         system.debug('Lista para actualizar acct: ' + accToUpdate);
         update accToUpdate;
-
     }*/
 
  //Requirement #2b
-    public static void updateContactOwner(List<Account> nAccs, List<Account> oAccs){
+    public static void updateContactOwnerHelper(List<Account> nAccs, List<Account> oAccs){
 
         List <Account> accs = utils.filterByChangeZipCodeNewValues(nAccs, oAccs);
+
         if(accs !=null){
-            List<Account> myAccounts = [SELECT Id, Name, OwnerId, BillingPostalCode FROM Account WHERE id = :accs];
-            List<Contact> ctcs = [SELECT Id, OwnerId, AccountId FROM Contact];
+            List<Account> myAccounts = [SELECT Id, Name, OwnerId, BillingPostalCode FROM Account WHERE id in :accs];
+            updateContactOwner(myAccounts);
+
+            /*List<Contact> ctcs = [SELECT Id, OwnerId, AccountId FROM Contact];
             List<Contact> ctcToUpdate = new List<Contact>();
 
             for(Account a : myAccounts){
@@ -46,17 +47,39 @@ public class AccountController {
                     }
                 }
             }
-            update ctcToUpdate;
+            update ctcToUpdate;*/
         }
     }
 
+
+    public static void updateContactOwner (List<Account> accs){
+        system.debug('entra en updatecontact owner');
+        List<Contact> ctcs = [SELECT Id, OwnerId, AccountId, name FROM Contact];
+        List<Contact> ctcToUpdate = new List<Contact>();
+        
+        for(Account a : accs){
+            for(Contact c : ctcs){
+                if(c.AccountId == a.Id){
+                    system.debug('c.AccountId' + c.AccountId);
+                    system.debug('a.OwnerId' + a.OwnerId);
+                    c.OwnerId = a.OwnerId;
+                    system.debug('le asigno a ' + c.name + 'el id: ' + a.OwnerId);
+                    ctcToUpdate.add(c);
+                }
+            }
+        }
+        update ctcToUpdate;
+    }
+
     //Requirement #2c
-    public static void updateOpenOpportunities(List<Account> nAccs, List<Account> oAccs){
+    public static void updateOpenOpportunitiesHelper(List<Account> nAccs, List<Account> oAccs){
 
         List <Account> accs = utils.filterByChangeZipCodeNewValues(nAccs, oAccs);
         if(accs !=null){
+            List<Account> myAccounts = [SELECT Id, Name, OwnerId, BillingPostalCode FROM Account WHERE id in :accs];
+            updateOpenOpportunities(myAccounts);
+            /*
             List<Opportunity> opps = [SELECT accountId, ownerId, stageName from opportunity WHERE stageName != 'Closed Lost' AND stageName != 'Closed Won'];
-            List<Account> myAccounts = [SELECT Id, Name, OwnerId, BillingPostalCode FROM Account WHERE id = :accs];
             List<Opportunity> oppToUpdate = new List<Opportunity>();
 
             for(Opportunity o : opps){
@@ -67,9 +90,25 @@ public class AccountController {
                     }
                 }
             }
-            update oppToUpdate;
+            update oppToUpdate;*/
         }
     }
+
+    public static void updateOpenOpportunities(List<Account> accs){
+        List<Opportunity> opps = [SELECT accountId, ownerId, stageName from opportunity WHERE stageName != 'Closed Lost' AND stageName != 'Closed Won'];
+        List<Opportunity> oppToUpdate = new List<Opportunity>();
+
+        for(Opportunity o : opps){
+            for(Account a : accs){
+                if(o.accountId == a.Id){
+                    o.ownerId = a.ownerId;
+                    oppToUpdate.add(o);
+                }
+            }
+        }
+        update oppToUpdate;
+    }
+
 
     //Requirement #3
     public static void updateAccountOwner(List<Account> nAccs, List<Account> oAccs){
@@ -92,65 +131,63 @@ public class AccountController {
                         filteredNewTerritories.add(t);
                     }
                 } 
-                //create random number to pick an owner
-                Integer random = Integer.valueof(Math.random()*filteredNewTerritories.Size());
-                //assign ownerId
-                a.ownerId = filteredNewTerritories[random].owner__c;
-                //Add updated value to the list
-                accToUpdate.add(a); 
+
+                if(filteredNewTerritories.Size() >0){
+                    //create random number to pick an owner
+                    Integer random = Integer.valueof(Math.random()*filteredNewTerritories.Size());
+                    //assign ownerId
+                    a.ownerId = filteredNewTerritories[random].owner__c;
+                    //Add updated value to the list
+                    accToUpdate.add(a); 
+                }
             }
             //Update in database
             update accToUpdate;
         }
+
     }
 
     //#Requirement 6
     public static void createAssigmentHistoryRecord(List<Account> nAccs, List<Account> oAccs){
-
         system.debug(1);
 
         //Get values from trigger new
+        system.debug('llamo a utils desde createAssigmentHistoryRecord');
         List <Account> newAccs = utils.filterByChangeZipCodeNewValues(nAccs, oAccs);
-                
+
         if(newAccs !=null){
         //Get values from trigger old
         List <Account> oldAccs = utils.filterByChangeZipCodeOldValues(nAccs, oAccs);
         List<Assignment_History__c> assHistoryToInsert = new List<Assignment_History__c>();
         List<Territory__c> territories = [SELECT Zip_Code__c, Owner__c FROM Territory__C];
+        List <Account> myAccounts = [SELECT OwnerId, BillingPostalCode, CreatedById FROM Account WHERE Id in : newAccs];    
 
-        system.debug('Las accounts que recorre: ' + newAccs.size());
-        system.debug('Lista para insertar antes: ' + assHistoryToInsert);
+        system.debug('new acc: '+ myAccounts[0].BillingPostalCode + 'id: ' + myAccounts[0].ownerId);
+        system.debug('old acc: '+ oldAccs[0].BillingPostalCode + 'id: ' + oldAccs[0].ownerId);
 
-        for(Account aNew : newAccs){
+        for(Account aNew : myAccounts){
             if(oldAccs != null){
-                system.debug(2);
                 for(account aOld : oldAccs){
                     if(aNew.Id == aOld.Id){
-                        system.debug(3);
-                        system.debug('ownerId ' + aNew.OwnerId);
-                        system.debug('vieja account id: ' + aOld.Id);
                         Assignment_History__c ah = new Assignment_History__c();
+                        system.debug('new acc dentro del for: '+ aNew.BillingPostalCode + 'id: ' + aNew.ownerId);
+                        system.debug('old acc dentro del for: '+ aOld.BillingPostalCode + 'id: ' + aOld.ownerId);
                         ah.Account__c= aNew.Id;
                         ah.Changed_By__c = aNew.CreatedById;
                         ah.Previous_Owner__c = aOld.OwnerId;
                         ah.New_owner__c = aNew.OwnerId;
                         for(Territory__c t : territories){
                             if(t.Zip_Code__c == aOld.BillingPostalCode && t.Owner__c == aOld.OwnerId){
-                                system.debug(4);
                                 ah.Previous_territory__c = t.Id;
                             }
                             if(t.Zip_Code__c == aNew.BillingPostalCode && t.Owner__c == aNew.OwnerId){
-                                system.debug(5);
                                 ah.New_Territory__c = t.Id;
                             }
                         }
-                        
                         assHistoryToInsert.add(ah);
-                        //system.debug('Lista para insertar si no es null: ' + assHistoryToInsert);
                     }
                 }
             }else{
-                system.debug('entra en el else');
                 Assignment_History__c ah = new Assignment_History__c();
                 ah.Account__c= aNew.Id;
                 ah.Changed_By__c = aNew.CreatedById;
@@ -163,10 +200,8 @@ public class AccountController {
 
                     }
                 }
-                system.debug('antes de agregar');
                 assHistoryToInsert.add(ah);            }
         }
-        system.debug('Lista para insertar: ' + assHistoryToInsert);
         Insert assHistoryToInsert;
 
 
