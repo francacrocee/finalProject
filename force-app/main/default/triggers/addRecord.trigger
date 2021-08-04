@@ -1,7 +1,5 @@
 trigger addRecord on Territory__c (before insert, before update) {
-
     List<Territory__c> trrts = new List<Territory__c>();
-
     if(trigger.isBefore){
         if(trigger.isUpdate){
             for(Territory__c tnew : trigger.new){
@@ -16,18 +14,13 @@ trigger addRecord on Territory__c (before insert, before update) {
                     trrts[0].name.addError('Can not add this territory, check conditions or contact the administrator');
                 }
             }
-            
         }
-
         if(trigger.isInsert){
             trrts = trigger.new;
             system.debug('trrts: ' + trrts);
             if (territoryController.verifyMaxSalesRepForZipCode(trrts) == false){
                 trrts[0].name.addError('Can not add this territory, check conditions or contact the administrator');
             }
-            
         }
-        
     }
-
 }
