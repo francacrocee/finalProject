@@ -6,7 +6,6 @@ trigger ChangeAccountBillingZipCode on Account (after insert, after update) {
     oldAccs = trigger.Old;
 
     if(trigger.isAfter){
-        system.debug('trigger');
         if(trigger.isUpdate || trigger.isInsert){
             //call methods in salesRepController class
             AccountController.updateAccountOwner(accs, oldAccs);

@@ -17,7 +17,6 @@ trigger addRecord on Territory__c (before insert, before update) {
         }
         if(trigger.isInsert){
             trrts = trigger.new;
-            system.debug('trrts: ' + trrts);
             if (territoryController.verifyMaxSalesRepForZipCode(trrts) == false){
                 trrts[0].name.addError('Can not add this territory, check conditions or contact the administrator');
             }

@@ -10,8 +10,6 @@ public class utils {
                 for(Account aOld : oldAccs){
                     if(aNew.BillingPostalCode != aOld.BillingPostalCode){
                         nAccs.add(aNew);
-                        system.debug('agregó la cuenta: ' + aNew.Name);
-                        
                     }
                 }
             }else if(aNew.BillingPostalCode != null){
@@ -19,10 +17,8 @@ public class utils {
             }
         }
         if(nAccs.size()>0){
-            system.debug('utils devuelve: ' + nAccs.size() + ' accounts');
             return nAccs;
         }else{
-            system.debug('utils devuelve null');
             return null;
         }
             

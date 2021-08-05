@@ -33,17 +33,13 @@ public class AccountController {
     }
 
     public static void updateContactOwner (List<Account> accs){
-        system.debug('entra en updatecontact owner');
         List<Contact> ctcs = [SELECT Id, OwnerId, AccountId, name FROM Contact];
         List<Contact> ctcToUpdate = new List<Contact>();
         
         for(Account a : accs){
             for(Contact c : ctcs){
                 if(c.AccountId == a.Id){
-                    system.debug('c.AccountId' + c.AccountId);
-                    system.debug('a.OwnerId' + a.OwnerId);
                     c.OwnerId = a.OwnerId;
-                    system.debug('le asigno a ' + c.name + 'el id: ' + a.OwnerId);
                     ctcToUpdate.add(c);
                 }
             }
@@ -79,9 +75,8 @@ public class AccountController {
 
     //Requirement #3
     public static void updateAccountOwner(List<Account> nAccs, List<Account> oAccs){
-
         List <Account> accs = utils.filterByChangeZipCodeNewValues(nAccs, oAccs);
-        if(accs !=null){    
+        if(accs !=null){
             //Get all accounts with information I need
             List<Account> myAccounts = [SELECT Id, Name, OwnerId, BillingPostalCode FROM Account WHERE id = :accs];
             
@@ -113,10 +108,7 @@ public class AccountController {
 
     //#Requirement 6
     public static void createAssigmentHistoryRecord(List<Account> nAccs, List<Account> oAccs){
-        system.debug(1);
-
         //Get values from trigger new
-        system.debug('llamo a utils desde createAssigmentHistoryRecord');
         List <Account> newAccs = utils.filterByChangeZipCodeNewValues(nAccs, oAccs);
 
         if(newAccs !=null){
