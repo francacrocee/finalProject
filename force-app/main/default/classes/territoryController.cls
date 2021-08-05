@@ -63,7 +63,6 @@ public with sharing class territoryController {
                     for(Account a : accounts){
                         // if zip code and owner are the same in te account and territory, assign the new territory owner to this account.
                         if(ot.Owner__c == a.OwnerId && ter.Zip_Code__c == a.BillingPostalCode){
-                            system.debug('asigno a ' + a.name + ' el owner: ' + ter.owner__c);
                             a.OwnerId = ter.owner__C;
                             modifiedAccs.add(a);                    
                         }
@@ -71,7 +70,6 @@ public with sharing class territoryController {
                 }
             }
             update modifiedAccs;
-            system.debug('mod accounts: ' + modifiedAccs);
             //Call the methods I have to change related sales rep in accounts
             AccountController.updateContactOwner(modifiedAccs);
             AccountController.updateOpenOpportunities(modifiedAccs);
