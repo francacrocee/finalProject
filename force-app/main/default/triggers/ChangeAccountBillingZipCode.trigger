@@ -14,6 +14,7 @@ trigger ChangeAccountBillingZipCode on Account (after insert, after update) {
             AccountController.createAssigmentHistoryRecord(accs, oldAccs);
         }
     }
+//Email template
 }
 
 

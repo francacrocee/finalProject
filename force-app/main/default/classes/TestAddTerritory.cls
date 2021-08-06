@@ -76,7 +76,7 @@ public class TestAddTerritory {
         insert trrt;
         //List <Account> accounts = TestDataFactory.createAccounts();
         //insert accounts;
-        List<Account> accs = new List<Account>();
+        
         Account a = New Account (Name = 'Account 1', BillingPostalCode = '1001');
         insert a;
 
@@ -91,7 +91,10 @@ public class TestAddTerritory {
 
         Account updatedAcc = [SELECT OwnerId, BillingPostalCode FROM Account WHERE Id= :a.Id];
         system.assertEquals(usr.Id, updatedAcc.OwnerId);
-        
+        /*List<Account> updatedAccs = [SELECT OwnerId, BillingPostalCode FROM Account WHERE Id in :accounts];
+        for(Account a : updatedAccs){
+            system.assertEquals(usr.Id, a.OwnerId);
+        }*/
     }
 
 
