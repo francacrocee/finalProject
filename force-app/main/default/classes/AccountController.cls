@@ -160,5 +160,52 @@ public class AccountController {
         Insert assHistoryToInsert;
         }
     }
+
+    //Bonus challenge #1
+    public static void sendEmailToAccountOwners(List<Account> nAccs, List<Account> oAccs){
+        Map<Account, List<User>> accountUser = new Map<Account, List<User>>();
+        List<User> usrs = [SELECT email FROM User];
+
+
+        for(Account nAc : nAccs){
+            for(Account oAc : oAccs){
+                if(nAc.Id == oAc.Id && nAc.OwnerId != oAc.OwnerId){
+                    accountUser.put(nAc, new List<User>());
+                    for(User u : usrs){
+                        if(u.Id == nAc.OwnerId){
+                            accountUser.get(nAc).add(u);
+                        }
+                        if(u.Id == oAc.OwnerId){
+                            accountUser.get(nAc).add(u);
+                        }
+                    }
+                }
+            }
+        }
+        if(!accountUser.isEmpty()){
+            system.debug('mi mapa: ' + accountUser);
+            sendMailToOwners(accountUser);
+        }
+    }
+
+    public static void sendMailToOwners(Map<Account, List<User>> usersPerAccount){
+        Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+        for(Account a : usersPerAccount.keySet()){
+            List<User> users = usersPerAccount.get(a);
+            String[] toAddress = new List<String>();
+            String subject = 'Changes in ' + a.Name + ' account' ;
+            String body = 'The owner of '  + a.Name + ' has changed';
+            for(User u : users){
+                toAddress.add(u.Email);
+            }
+            mail.setToAddresses(toAddress);
+            mail.setSubject(subject);
+            mail.setPlainTextBody(body);
+            Messaging.SendEmailResult[] results = Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
+            system.debug('mails: ' + toAddress);
+            system.debug('res: ' + results);
+        }
+    }
+
 }
  
