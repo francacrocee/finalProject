@@ -187,25 +187,110 @@ public class AccountController {
             sendMailToOwners(accountUser);
         }
     }
-
+/*
     public static void sendMailToOwners(Map<Account, List<User>> usersPerAccount){
         Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+        EmailTemplate et=[SELECT id FROM EmailTemplate WHERE Name = 'Account change email template' limit 1];
         for(Account a : usersPerAccount.keySet()){
             List<User> users = usersPerAccount.get(a);
             String[] toAddress = new List<String>();
-            String subject = 'Changes in ' + a.Name + ' account' ;
-            String body = 'The owner of '  + a.Name + ' has changed';
             for(User u : users){
                 toAddress.add(u.Email);
             }
             mail.setToAddresses(toAddress);
-            mail.setSubject(subject);
-            mail.setPlainTextBody(body);
+            mail.setWhatId(a.Id);
+            //mail.setTargetObjectId(a.OwnerId);
+            mail.setTargetObjectId('0035e00000C5gH7AAJ'); //contact
+            mail.setTemplateId(et.id);
+            mail.setSaveAsActivity(false);
+                    
             Messaging.SendEmailResult[] results = Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
-            system.debug('mails: ' + toAddress);
-            system.debug('res: ' + results);
         }
     }
+    */
+    public static void sendMailToOwners(Map<Account, List<User>> usersPerAccount){
+        //Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+        EmailTemplate et=[SELECT id FROM EmailTemplate WHERE Name = 'Account change email template' limit 1];
+        for(Account a : usersPerAccount.keySet()){
+            List<User> users = usersPerAccount.get(a);
+            String[] toAddress = new List<String>();
+            for(User u : users){
+                toAddress.add(u.Email);
+            }
+            Messaging.SingleEmailMessage mail = Messaging.renderStoredEmailTemplate(et.id, a.ownerId, a.id);
+            mail.setTargetObjectId(a.ownerId);
+            mail.setToAddresses(toAddress);
+            mail.setSaveAsActivity(false);
+                    
+            Messaging.SendEmailResult[] results = Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
+        }
+    }
+/*
 
+  //Requirement #bonus2
+  public static void updateAccountOwner2(List<Account> nAccs, List<Account> oAccs){
+    List <Account> accs = utils.filterByChangeZipCodeNewValues(nAccs, oAccs);
+    if(accs !=null){
+        //Get all accounts with information I need
+        List<Account> myAccounts = [SELECT Id, Name, OwnerId, BillingPostalCode FROM Account WHERE id = :accs];
+        
+        //Create an empty list to update with new values
+        List<Account> accToUpdate = new List<Account>();
+
+        List<Territory__c> allTerritories =[SELECT Zip_Code__c, Owner__c FROM Territory__C];
+        List<Territory__c> filteredNewTerritories = new List<Territory__c>();
+        //Iterate over accounts
+        for(Account a : myAccounts){
+            for(Territory__c t : allTerritories){
+                if(a.BillingPostalCode == t.Zip_code__c){
+                    filteredNewTerritories.add(t);
+                }
+            } 
+            //if there is any territory with selected zip code, assign a new account owner
+            if(filteredNewTerritories.Size() >0){
+                //If there is only one in the territorie's list, assign it
+                if(filteredNewTerritories.Size() == 1){
+                    a.ownerId = filteredNewTerritories[0].owner__c;
+                    //if there is more than one
+                }else{
+                    //create a map with all accounts per territory
+                    map<Territory__c, List<Account>> accsPerTerritory = new map<Territory__c, List<Account>>();
+                    List<Account> allAccounts = [SELECT OwnerId FROM Account];
+                    for(Territory__c t : filteredNewTerritories){
+                        accsPerTerritory.put(t, new List<Account>());
+                        for(Account a : allAccounts){
+                            if(a.BillingPostalCode == t.Zip_Code__c && a.ownerId == t.owner__c){
+                                accsPerTerritory.get(t).add(a);
+                            }
+                        }
+                    }  
+
+
+                }
+                                  
+                //assign ownerId
+                a.ownerId = filteredNewTerritories[random].owner__c;
+                //Add updated value to the list
+                accToUpdate.add(a); 
+            }
+        }
+        //Update in database
+        update accToUpdate;
+    }
+}*/
 }
- 
+
+
+/*
+map<Territory__c, List<Account>> accsPerTerritory = new map<Territory__c, List<Account>>();
+List<Accounts> allAccounts = [SELECT OwnerId FROM Account];
+List<Territory> filteredNewTerritories = [SELECT Zip_Code__c, owner__c FROM Territory__c WHERE Zip_Code__c == '11']
+for(Territory__c t : filteredNewTerritories){
+accsPerTerritory.put(t, new List<Account>());
+for(Account a : allAccounts){
+    if(a.BillingPostalCode == t.Zip_Code__c && a.ownerId == t.owner__c){
+accsPerTerritory.get(t).add(a);
+    }
+}
+}  
+ */
