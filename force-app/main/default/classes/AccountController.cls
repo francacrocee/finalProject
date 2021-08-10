@@ -74,7 +74,7 @@ public class AccountController {
 
 
     //Requirement #3
-    public static void updateAccountOwner(List<Account> nAccs, List<Account> oAccs){
+    /*public static void updateAccountOwner(List<Account> nAccs, List<Account> oAccs){
         List <Account> accs = utils.filterByChangeZipCodeNewValues(nAccs, oAccs);
         if(accs !=null){
             //Get all accounts with information I need
@@ -104,7 +104,43 @@ public class AccountController {
             //Update in database
             update accToUpdate;
         }
+    }*/
+    public static void updateAccountOwner(List<Account> nAccs, List<Account> oAccs){
+        List <Account> accs = utils.filterByChangeZipCodeNewValues(nAccs, oAccs);
+        if(accs !=null){
+            //Get all accounts with information I need
+            List<Account> myAccounts = [SELECT Id, Name, OwnerId, BillingPostalCode FROM Account WHERE id = :accs];
+            assignRandomOwner(myAccounts);           
+        }
     }
+
+    public static void assignRandomOwner(List<Account> myAccounts){
+
+        List<Territory__c> allTerritories =[SELECT Zip_Code__c, Owner__c FROM Territory__C];
+        List<Territory__c> filteredNewTerritories = new List<Territory__c>();
+
+        //Create an empty list to update with new values
+        List<Account> accToUpdate = new List<Account>();
+        
+        //Iterate over accounts
+        for(Account a : myAccounts){
+            for(Territory__c t : allTerritories){
+                if(a.BillingPostalCode == t.Zip_code__c){
+                    filteredNewTerritories.add(t);
+                }
+            } 
+            if(filteredNewTerritories.Size() >0){
+                //create random number to pick an owner
+                Integer random = Integer.valueof(Math.random()*filteredNewTerritories.Size());
+                //assign ownerId
+                a.ownerId = filteredNewTerritories[random].owner__c;
+                //Add updated value to the list
+                accToUpdate.add(a); 
+            }
+        }
+        upsert accToUpdate;
+    }
+
 
     //#Requirement 6
     public static void createAssigmentHistoryRecord(List<Account> nAccs, List<Account> oAccs){
