@@ -17,6 +17,7 @@ global class verifyAccountOwners implements Schedulable {
                 accToUpdate.add(a);
             }
         }
+        system.debug('accToUpdate ' + accToUpdate);
         if(accToUpdate !=null){
             AccountController.assignRandomOwner(accToUpdate);
         }
