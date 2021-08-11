@@ -74,7 +74,7 @@ public class AccountController {
 
 
     //Requirement #3
-    public static void updateAccountOwner(List<Account> nAccs, List<Account> oAccs){
+    /*public static void updateAccountOwner(List<Account> nAccs, List<Account> oAccs){
         List <Account> accs = utils.filterByChangeZipCodeNewValues(nAccs, oAccs);
         if(accs !=null){
             //Get all accounts with information I need
@@ -104,7 +104,87 @@ public class AccountController {
             //Update in database
             update accToUpdate;
         }
+    }*/
+    public static void updateAccountOwner(List<Account> nAccs, List<Account> oAccs){
+        List <Account> accs = utils.filterByChangeZipCodeNewValues(nAccs, oAccs);
+        if(accs !=null){
+            //Get all accounts with information I need
+            List<Account> myAccounts = [SELECT Id, Name, OwnerId, BillingPostalCode FROM Account WHERE id = :accs];
+            assignRandomOwner(myAccounts);  
+            //roundRoubinOwners(myAccounts);        
+        }
     }
+
+    public static void assignRandomOwner(List<Account> myAccounts){
+
+        List<Territory__c> allTerritories =[SELECT Zip_Code__c, Owner__c FROM Territory__C];
+        List<Territory__c> filteredNewTerritories = new List<Territory__c>();
+
+        //Create an empty list to update with new values
+        List<Account> accToUpdate = new List<Account>();
+        
+        //Iterate over accounts
+        for(Account a : myAccounts){
+            for(Territory__c t : allTerritories){
+                if(a.BillingPostalCode == t.Zip_code__c){
+                    filteredNewTerritories.add(t);
+                }
+            } 
+            if(filteredNewTerritories.Size() >0){
+                //create random number to pick an owner
+                Integer random = Integer.valueof(Math.random()*filteredNewTerritories.Size());
+                //assign ownerId
+                a.ownerId = filteredNewTerritories[random].owner__c;
+                //Add updated value to the list
+                accToUpdate.add(a); 
+            }
+        }
+        upsert accToUpdate;
+    }
+
+    /*public static void roundRoubinOwners(List<Account> myAccounts){
+        system.debug('entro al round robin');
+        List<Territory__c> allTerritories =[SELECT Zip_Code__c, Owner__c FROM Territory__C];
+        List<Territory__c> filteredNewTerritories = new List<Territory__c>();
+        List<User> users = [SELECT username, roundRobin__c FROM User];
+        List<User> usersToUpdate = new List<User>();
+        User actualUsr = new User();
+
+        //Create an empty list to update with new values
+        List<Account> accToUpdate = new List<Account>();
+        
+        //Iterate over accounts
+        for(Account a : myAccounts){
+            for(Territory__c t : allTerritories){
+                if(a.BillingPostalCode == t.Zip_code__c){
+                    filteredNewTerritories.add(t);
+                }
+            } 
+            if(filteredNewTerritories.Size() >0){
+                system.debug('filteredNewTerritories: ' + filteredNewTerritories);
+                Integer minValue = 999999999;
+                Territory__c toBeAssigned = new Territory__c();
+                for(Territory__c ter : filteredNewTerritories){
+                    for(user u : users){
+                        system.debug('u.roundRobin__c: ' + u.roundRobin__c);
+                        if(u.id == ter.owner__c && u.roundRobin__c <= minValue){
+                            minValue = Integer.valueOf(u.roundRobin__c);
+                            toBeAssigned = ter;
+                            actualUsr = u;
+                        }
+                    }
+                }
+                system.debug('usr.roundRobin__c: ' + actualUsr.roundRobin__c);
+                actualUsr.roundRobin__c ++;
+                usersToUpdate.add(actualUsr);
+                a.OwnerId = actualUsr.id;
+                accToUpdate.add(a);
+            }
+        }
+        update accToUpdate;
+        update usersToUpdate;
+    }
+*/
 
     //#Requirement 6
     public static void createAssigmentHistoryRecord(List<Account> nAccs, List<Account> oAccs){
@@ -160,5 +240,74 @@ public class AccountController {
         Insert assHistoryToInsert;
         }
     }
+
+    //Bonus challenge #1
+    public static void sendEmailToAccountOwners(List<Account> nAccs, List<Account> oAccs){
+        Map<Account, List<User>> accountUser = new Map<Account, List<User>>();
+        List<User> usrs = [SELECT email FROM User];
+
+        for(Account nAc : nAccs){
+            for(Account oAc : oAccs){
+                if(nAc.Id == oAc.Id && nAc.OwnerId != oAc.OwnerId){
+                    accountUser.put(nAc, new List<User>());
+                    for(User u : usrs){
+                        if(u.Id == nAc.OwnerId){
+                            accountUser.get(nAc).add(u);
+                        }
+                        if(u.Id == oAc.OwnerId){
+                            accountUser.get(nAc).add(u);
+                        }
+                    }
+                }
+            }
+        }
+        if(!accountUser.isEmpty()){
+            system.debug('mi mapa: ' + accountUser);
+            sendMailToOwners(accountUser);
+        }
+    }
+/*
+    public static void sendMailToOwners(Map<Account, List<User>> usersPerAccount){
+        Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+        EmailTemplate et=[SELECT id FROM EmailTemplate WHERE Name = 'Account change email template' limit 1];
+        for(Account a : usersPerAccount.keySet()){
+            List<User> users = usersPerAccount.get(a);
+            String[] toAddress = new List<String>();
+            for(User u : users){
+                toAddress.add(u.Email);
+            }
+            mail.setToAddresses(toAddress);
+            mail.setWhatId(a.Id);
+            //mail.setTargetObjectId(a.OwnerId);
+            mail.setTargetObjectId('0035e00000C5gH7AAJ'); //contact
+            mail.setTemplateId(et.id);
+            mail.setSaveAsActivity(false);
+                    
+            Messaging.SendEmailResult[] results = Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
+        }
+    }
+    */
+    public static void sendMailToOwners(Map<Account, List<User>> usersPerAccount){
+        system.debug('Recieved map: ' + usersPerAccount);
+        EmailTemplate et=[SELECT id FROM EmailTemplate WHERE Name = 'Account change email template' limit 1];
+        for(Account a : usersPerAccount.keySet()){
+            List<User> users = usersPerAccount.get(a);
+            String[] toAddress = new List<String>();
+            for(User u : users){
+                toAddress.add(u.Email);
+            }
+            Messaging.SingleEmailMessage mail = Messaging.renderStoredEmailTemplate(et.id, a.ownerId, a.id);
+            system.debug('toAddress: ' + toAddress);
+            mail.setTargetObjectId(a.ownerId);
+            mail.setSaveAsActivity(false);
+            if(toAddress != null){
+                system.debug('toAddress is not null');
+                mail.setToAddresses(toAddress);
+                Messaging.SendEmailResult[] results = Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
+                system.debug('result: ' +  results);
+            }                
+        }
+    }
 }
- 
+
+
