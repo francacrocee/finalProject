@@ -62,13 +62,9 @@ public class TestDataFactory {
         Territory__c t1 = new Territory__c(Name='Territory 1', Owner__c = Users[0].Id, Zip_Code__c = '1003');
         Territory__c t2 = new Territory__c(Name='Territory 1', Owner__c = Users[1].Id, Zip_Code__c = '1003');
         Territory__c t3 = new Territory__c(Name='Territory 1', Owner__c = Users[2].Id, Zip_Code__c = '1003');
-        
-
         Territory__c t4 = new Territory__c(Name='Territory 2', Owner__c = Users[0].Id, Zip_Code__c = '1002');
-        Territory__c t5 = new Territory__c(Name='Territory 2', Owner__c = Users[1].Id, Zip_Code__c = '1002');
-
+        //Territory__c t5 = new Territory__c(Name='Territory 2', Owner__c = Users[1].Id, Zip_Code__c = '1002');
         Territory__c t6 = new Territory__c(Name='Territory 3', Owner__c = Users[2].Id, Zip_Code__c = '1001');
-        
         terr.add(t1);
         terr.add(t2);
         terr.add(t3);
@@ -81,7 +77,6 @@ public class TestDataFactory {
 
 public static List<Opportunity> createOppsWithAccs(List<Account> accounts){
     List<Opportunity> opportunities = new List<Opportunity>();
-
     for(integer i=1; i<10; i++){
         Opportunity  o = new Opportunity(
             Name='Test opportunity ' + i,
@@ -97,7 +92,6 @@ public static List<Opportunity> createOppsWithAccs(List<Account> accounts){
 
     public static List<Contact> createContactsWithAccs(List<Account> accounts){
         List<Contact> contacts = new List<Contact>();
-
         for(integer i=1; i<10; i++){
             Contact c = new Contact(
                 LastName= 'Contact ' + i,
@@ -107,8 +101,4 @@ public static List<Opportunity> createOppsWithAccs(List<Account> accounts){
         insert contacts;
         return contacts;
     }
-
-
-
-
 }

@@ -1,6 +1,6 @@
 @istest 
 private class verifyAccountOwnersTest {
-    public static String CRON_EXP = '0 0 0 11 8 ? 2021';
+    public static String CRON_EXP = '0 0 0 13 8 ? 2021';
 
     static testmethod void testScheduledJob() {
 

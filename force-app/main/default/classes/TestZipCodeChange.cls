@@ -98,4 +98,27 @@ public class TestZipCodeChange {
     }
 
     
+    @isTest
+    public static void verifyAssigmentHistoryRecord(){
+        List<Account> accs = TestDataFactory.createAccounts();
+        //insert accs;
+        List<Territory__c> trrt = TestDataFactory.createTerritories();
+        //insert trrt;
+                
+        Test.startTest();
+        Database.insert(trrt);
+        Database.insert(accs);
+        Test.StopTest();
+
+        Account a = [SELECT OwnerId, BillingPostalCode, Name FROM Account WHERE Name = 'Account 1'];
+
+        Assignment_History__c ah = [Select New_Owner__c, Previous_Owner__c, New_Territory__c, Previous_Territory__c From Assignment_History__c  ORDER BY CreatedDate DESC LIMIT 1];
+        
+        //Compare previous owners
+        system.assertEquals(ah.Previous_Owner__c, null);
+        //Compare new owner
+        system.assertEquals(ah.New_Owner__c, a.OwnerId);
+
+    }
+
 }

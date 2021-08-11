@@ -12,7 +12,7 @@ trigger ChangeAccountBillingZipCode on Account (after insert, after update) {
             AccountController.updateContactOwnerHelper(accs, oldAccs);
             AccountController.updateOpenOpportunitiesHelper(accs, oldAccs);
             AccountController.createAssigmentHistoryRecord(accs, oldAccs);
-            //AccountController.sendEmailToAccountOwners(accs, oldAccs); -- Lo comento porque llegue al limite de mails.
+            //AccountController.sendEmailToAccountOwners(accs, oldAccs);
         }
     }
 }

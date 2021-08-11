@@ -20,6 +20,7 @@ global class verifyAccountOwners implements Schedulable {
         system.debug('accToUpdate ' + accToUpdate);
         if(accToUpdate !=null){
             AccountController.assignRandomOwner(accToUpdate);
+            //AccountController.roundRoubinOwners(accToUpdate);
         }
     }
 }

@@ -1,6 +1,6 @@
 public class utils {
 
-    //Method to retrieve all accounts in which its Billing Postal Code has changed - returns new values - 
+    //Method to retrieve all accounts in which its Billing Postal Code has changed - returns new values (trigger.new)- 
     public static List <Account> filterByChangeZipCodeNewValues (List <Account> newAccs, List <Account> oldAccs){
 
         List<Account> nAccs = new List<Account>();
@@ -24,7 +24,7 @@ public class utils {
             
     } 
     
-    //Method to retrieve all accounts in which its Billing Postal Code has changed - returns OLD values - 
+    //Method to retrieve all accounts in which its Billing Postal Code has changed - returns OLD values (trigger.old)- 
     public static List <Account> filterByChangeZipCodeOldValues (List <Account> newAccs, List <Account> oldAccs){
     
             //List<Account> nAccs = new List<Account>();
