@@ -74,37 +74,6 @@ public class AccountController {
 
 
     //Requirement #3
-    /*public static void updateAccountOwner(List<Account> nAccs, List<Account> oAccs){
-        List <Account> accs = utils.filterByChangeZipCodeNewValues(nAccs, oAccs);
-        if(accs !=null){
-            //Get all accounts with information I need
-            List<Account> myAccounts = [SELECT Id, Name, OwnerId, BillingPostalCode FROM Account WHERE id = :accs];
-            
-            //Create an empty list to update with new values
-            List<Account> accToUpdate = new List<Account>();
-
-            List<Territory__c> allTerritories =[SELECT Zip_Code__c, Owner__c FROM Territory__C];
-            List<Territory__c> filteredNewTerritories = new List<Territory__c>();
-            //Iterate over accounts
-            for(Account a : myAccounts){
-                for(Territory__c t : allTerritories){
-                    if(a.BillingPostalCode == t.Zip_code__c){
-                        filteredNewTerritories.add(t);
-                    }
-                } 
-                if(filteredNewTerritories.Size() >0){
-                    //create random number to pick an owner
-                    Integer random = Integer.valueof(Math.random()*filteredNewTerritories.Size());
-                    //assign ownerId
-                    a.ownerId = filteredNewTerritories[random].owner__c;
-                    //Add updated value to the list
-                    accToUpdate.add(a); 
-                }
-            }
-            //Update in database
-            update accToUpdate;
-        }
-    }*/
     public static void updateAccountOwner(List<Account> nAccs, List<Account> oAccs){
         List <Account> accs = utils.filterByChangeZipCodeNewValues(nAccs, oAccs);
         if(accs !=null){
@@ -186,11 +155,10 @@ public class AccountController {
     }
 */
 
-    //#Requirement 6
+    //Requirement #6
     public static void createAssigmentHistoryRecord(List<Account> nAccs, List<Account> oAccs){
         //Get values from trigger new
         List <Account> newAccs = utils.filterByChangeZipCodeNewValues(nAccs, oAccs);
-
         if(newAccs !=null){
         //Get values from trigger old
         List <Account> oldAccs = utils.filterByChangeZipCodeOldValues(nAccs, oAccs);
@@ -266,27 +234,7 @@ public class AccountController {
             sendMailToOwners(accountUser);
         }
     }
-/*
-    public static void sendMailToOwners(Map<Account, List<User>> usersPerAccount){
-        Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
-        EmailTemplate et=[SELECT id FROM EmailTemplate WHERE Name = 'Account change email template' limit 1];
-        for(Account a : usersPerAccount.keySet()){
-            List<User> users = usersPerAccount.get(a);
-            String[] toAddress = new List<String>();
-            for(User u : users){
-                toAddress.add(u.Email);
-            }
-            mail.setToAddresses(toAddress);
-            mail.setWhatId(a.Id);
-            //mail.setTargetObjectId(a.OwnerId);
-            mail.setTargetObjectId('0035e00000C5gH7AAJ'); //contact
-            mail.setTemplateId(et.id);
-            mail.setSaveAsActivity(false);
-                    
-            Messaging.SendEmailResult[] results = Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
-        }
-    }
-    */
+
     public static void sendMailToOwners(Map<Account, List<User>> usersPerAccount){
         system.debug('Recieved map: ' + usersPerAccount);
         EmailTemplate et=[SELECT id FROM EmailTemplate WHERE Name = 'Account change email template' limit 1];

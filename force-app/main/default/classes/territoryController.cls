@@ -42,7 +42,7 @@ public with sharing class territoryController {
         SYSTEM.DEBUG('ESTOY EN RELATED RECORDS');
         //get filtered territories by those who change its sales Rep
         List<Territory__c> filteredList = utils.filterByChangeSalesRep(newTerritories, oldTerritories);
-        
+        SYSTEM.DEBUG('filteredList: ' + filteredList);
         //If the list is not null
         if(filteredList !=null){
             //Get territories in trigger.old which id is present in filtered territories
@@ -63,7 +63,9 @@ public with sharing class territoryController {
                 for(Territory__c ot : oldTerrs){
                     for(Account a : accounts){
                         // if zip code and owner are the same in te account and territory, assign the new territory owner to this account.
+                        SYSTEM.DEBUG(ot.Owner__c + ' = ' + a.OwnerId + ' y ' + ter.Zip_Code__c + ' = ' + a.BillingPostalCode);
                         if(ot.Owner__c == a.OwnerId && ter.Zip_Code__c == a.BillingPostalCode){
+                            system.debug('asigno el owner a la account');
                             a.OwnerId = ter.owner__C;
                             modifiedAccs.add(a);                    
                         }

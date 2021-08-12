@@ -1,4 +1,4 @@
-trigger addRecord on Territory__c (before insert, after insert, before update) {
+trigger addRecord on Territory__c (before insert, after insert, before update, after update) {
     List<Territory__c> trrts = new List<Territory__c>();
     //BEFORE
     if(trigger.isBefore){
@@ -27,6 +27,7 @@ trigger addRecord on Territory__c (before insert, after insert, before update) {
     //AFTER
     if(trigger.isAfter){
         if(trigger.isUpdate){
+            system.debug(1);
             territoryController.updateSalesRepInRelatedRecords(trigger.new, trigger.old);
         }
     }
