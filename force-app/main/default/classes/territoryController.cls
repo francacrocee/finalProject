@@ -39,6 +39,7 @@ public with sharing class territoryController {
 
     //Requirement #7
     public static void updateSalesRepInRelatedRecords (List<Territory__c> newTerritories, List<Territory__c> oldTerritories ){
+        SYSTEM.DEBUG('ESTOY EN RELATED RECORDS');
         //get filtered territories by those who change its sales Rep
         List<Territory__c> filteredList = utils.filterByChangeSalesRep(newTerritories, oldTerritories);
         

@@ -28,15 +28,11 @@ public class utils {
     public static List <Account> filterByChangeZipCodeOldValues (List <Account> newAccs, List <Account> oldAccs){
     
             //List<Account> nAccs = new List<Account>();
-            List<Account> oAccs = new List<Account>();
-    
-            if(oldAccs !=null){
-    
+            List<Account> oAccs = new List<Account>();    
+            if(oldAccs !=null){    
             }else{
                 return null;
-            }
-    
-            
+            }    
             for (Account aNew : newAccs){
                 if(oldAccs !=null){
                     for(Account aOld : oldAccs){
