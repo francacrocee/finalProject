@@ -100,14 +100,15 @@ public class TestZipCodeChange {
     
     @isTest
     public static void verifyAssigmentHistoryRecord(){
-        List<Account> accs = TestDataFactory.createAccounts();
+        //List<Account> accs = TestDataFactory.createAccounts();
         //insert accs;
+        Account ac = New Account (Name = 'Account 1', BillingPostalCode = '1001');
         List<Territory__c> trrt = TestDataFactory.createTerritories();
         //insert trrt;
                 
         Test.startTest();
         Database.insert(trrt);
-        Database.insert(accs);
+        Database.insert(ac);
         Test.StopTest();
 
         Account a = [SELECT OwnerId, BillingPostalCode, Name FROM Account WHERE Name = 'Account 1'];
